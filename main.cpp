@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
 	// burn-in step
 	for (long unsigned int i = 0; i < burnInNum; i++) {
 		pmsig.gibbsUpdate();
-		if (i % 10 == 0 & i > 0) {
+		if ((i % 10 == 0) & (i > 0)) {
 			std::cout << i << " times finished." << "\n";
 		}
 	}
