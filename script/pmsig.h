@@ -13,32 +13,18 @@
 
 class PMSig {
 
-    private:
+    protected:
         std::size_t N_; // # of mutation
         int S_; // # of samples
         int L_; // # of bases to consider
-    
         int K_; // # of cluster
-        int K_max_; // the limit of # of cluster
 
         std::vector<MutInfo> mutInfo_;    // information of depth and variant read for each mutation
-
         std::map<std::string, int> sampleName2Index;
-
-        int* z_;    // cluster assignment
-        int* y_;    // direction from the mutation signature
-
-
-        int*** A_;
-        int*** B_;
-        int** C_;
-        int** D_;
 
         std::size_t repNum_; // # of repeats after burn-in
 
-        double*** mean_Phi_;
-        double*** mean_Psi_;
-        double** mean_Theta_;
+        int* z_;    // cluster assignment
 
         double bayesianDeviance_;
         double* bayesianDevianceList_;
@@ -46,17 +32,41 @@ class PMSig {
         double* p_pos;
         double* p_neg;
 
+    public:
+        PMSig(const std::string& file);
+        virtual void preparation(const int K, const long unsigned int repNum) = 0;
+        virtual void gibbsUpdate() = 0;
+        virtual double getLogLikelihood() = 0; 
+        virtual void updateBayesianDeviance(const int num) = 0;
+        virtual void incrementParam() = 0;
+        void printBayesianDeviance();
+        void printPenalizedMeanBayesianDeviance(const std::string& out_dir);
+        std::size_t getMutationNum ();
+        int getSampleNum();
+        int getSeqSize();
+};
+
+
+class PMSig_independent : public PMSig {
+
+    private:
+        int* y_;    // direction from the mutation signature
+
+        int*** A_;
+        int*** B_;
+        int** C_;
+        int** D_;
+
+        double*** mean_Phi_;
+        double*** mean_Psi_;
+        double** mean_Theta_;
+
         double param_alpha_;  /// hyper parameter
         double param_beta_; /// auxially parameter
         double param_gamma_;
 
     public:
-        PMSig(const std::string& file);
-        void preparation(const int K, const long unsigned int repNum);
-        void gibbsUpdate();
-        double getLogLikelihood(); 
-        void updateBayesianDeviance(const int num);
-        void incrementParam();
+        PMSig_independent(const std::string& file);
         void printA();
         void printB();
         void printC();
@@ -64,11 +74,13 @@ class PMSig {
         void printMean_Phi(const std::string& out_dir);
         void printMean_Psi(const std::string& out_dir);
         void printMean_Theta(const std::string& out_dir);
-        void printBayesianDeviance();
-        void printPenalizedMeanBayesianDeviance(const std::string& out_dir);
-        std::size_t getMutationNum ();
-        int getSampleNum();
-        int getSeqSize();
+
+        void preparation(const int K, const long unsigned int repNum);
+        void gibbsUpdate();
+        double getLogLikelihood();
+        void updateBayesianDeviance(const int num);
+        void incrementParam();
+
 };
 
 inline int base2num (char base) {

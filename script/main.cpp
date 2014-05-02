@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
     lofs << "Reading input data from: " << mut_file << "\n";
     lofs.flush();
 
-    PMSig pmsig(mut_file);
+    PMSig_independent pmsig(mut_file);
     std::cerr << "Input data information" << "\n";
     lofs << "Input data information" << "\n";
     std::cerr << "# of mutations : " << pmsig.getMutationNum() << "\n";

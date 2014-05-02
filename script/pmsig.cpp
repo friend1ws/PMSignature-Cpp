@@ -78,8 +78,11 @@ PMSig::PMSig(const std::string& file) {
 
 }
 
+PMSig_independent::PMSig_independent(const std::string& file) : PMSig(file) {
+}
 
-void PMSig::preparation(const int K, const long unsigned int repNum) {
+
+void PMSig_independent::preparation(const int K, const long unsigned int repNum) {
 
     K_ = K; 
     repNum_ = repNum;
@@ -223,7 +226,7 @@ void PMSig::preparation(const int K, const long unsigned int repNum) {
 }
 
 
-void PMSig::gibbsUpdate() {
+void PMSig_independent::gibbsUpdate() {
 
     for (std::size_t i = 0; i < N_; ++i) {
 
@@ -356,7 +359,7 @@ void PMSig::gibbsUpdate() {
 }
 
 
-void PMSig::updateBayesianDeviance(const int num) {
+void PMSig_independent::updateBayesianDeviance(const int num) {
 
     bayesianDeviance_ = 0;
     bayesianDeviance_ = bayesianDeviance_ + K_ * L_ * (lgamma(4 * param_alpha_) - 4 * lgamma(param_alpha_));
@@ -390,7 +393,7 @@ void PMSig::updateBayesianDeviance(const int num) {
 }
 
 
-double PMSig::getLogLikelihood() {
+double PMSig_independent::getLogLikelihood() {
 
     double logLikelihood = 0;
     logLikelihood = logLikelihood + K_ * L_ * (lgamma(4 * param_alpha_) - 4 * lgamma(param_alpha_));
@@ -424,7 +427,7 @@ double PMSig::getLogLikelihood() {
 }
 
 
-void PMSig::incrementParam() {
+void PMSig_independent::incrementParam() {
 
     
     for (int k = 0; k < K_; ++k) {
@@ -462,7 +465,7 @@ void PMSig::incrementParam() {
 }
 
 
-void PMSig::printA() {
+void PMSig_independent::printA() {
 
     for (int k = 0; k < K_; k++) {
         std::cout << "A_[" << k << "][][]" << "\n";
@@ -475,7 +478,7 @@ void PMSig::printA() {
 
 }
 
-void PMSig::printMean_Phi(const std::string& out_dir) {
+void PMSig_independent::printMean_Phi(const std::string& out_dir) {
 
     std::string out_file = out_dir + ".Phi.txt";
     std::ofstream ofs(out_file.c_str());
@@ -498,7 +501,7 @@ void PMSig::printMean_Phi(const std::string& out_dir) {
     ofs.close();
 }
 
-void PMSig::printB() {
+void PMSig_independent::printB() {
 
     for (int k = 0; k < K_; k++) {
         std::cout << "B_[" << k << "][][]" << "\n";
@@ -510,7 +513,7 @@ void PMSig::printB() {
 
 }
 
-void PMSig::printMean_Psi(const std::string& out_dir) {
+void PMSig_independent::printMean_Psi(const std::string& out_dir) {
 
     std::string out_file = out_dir + ".Psi.txt";
     std::ofstream ofs(out_file.c_str());
@@ -535,7 +538,7 @@ void PMSig::printMean_Psi(const std::string& out_dir) {
     ofs.close();
 }
 
-void PMSig::printC() {
+void PMSig_independent::printC() {
 
     for (int k = 0; k < K_; k++) {
         std::cout << "C_[" << k << "][]" << "\n";
@@ -549,7 +552,7 @@ void PMSig::printC() {
 
 }
 
-void PMSig::printMean_Theta(const std::string& out_dir) {
+void PMSig_independent::printMean_Theta(const std::string& out_dir) {
 
     std::string out_file = out_dir + ".Theta.txt";
     std::ofstream ofs(out_file.c_str());
@@ -570,7 +573,7 @@ void PMSig::printMean_Theta(const std::string& out_dir) {
 }
 
 
-void PMSig::printD() {
+void PMSig_independent::printD() {
 
     for (int k = 0; k < K_; k++) {
         std::cout << "D_[" << k << "][]" << "\n";
