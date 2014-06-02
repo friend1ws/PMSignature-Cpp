@@ -7,13 +7,17 @@
 #include <unistd.h>
 #include "pmsig.h"
 
-
 int main(int argc, char** argv) {
 
     if (argc < 3) {
-        std::cerr << "Usage: " << argv[0] << " mutation_infomation_file output_directory number_of_clusters" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " method mutation_infomation_file output_directory" << std::endl;
         return -1;
     }
+
+    // int method = 0;
+    // if (static_cast<std::string>(argv[1]) == "full") {
+    //     method = 1;
+    // }
 
     std::string mut_file = argv[1];
     std::string out_dir = argv[2];
@@ -23,7 +27,7 @@ int main(int argc, char** argv) {
     long unsigned int burnInNum = 1000;
 
     int c = 0;
-    while ((c = getopt (argc, argv, "k:m:n:")) != -1)
+    while ((c = getopt (argc, argv, "k:m:n:")) != -1) {
         switch (c) {
             case 'k':
                 cluster_num = atoi(optarg);
@@ -47,7 +51,7 @@ int main(int argc, char** argv) {
            default:
              abort ();
            }
-     
+    } 
 
     srand(static_cast<std::size_t>(time(NULL)));
 
@@ -62,7 +66,11 @@ int main(int argc, char** argv) {
     lofs << "Reading input data from: " << mut_file << "\n";
     lofs.flush();
 
-    PMSig_independent pmsig(mut_file);
+
+    // PMSig_independent pmsig(mut_file);
+    PMSig_full pmsig(mut_file);
+    
+
     std::cerr << "Input data information" << "\n";
     lofs << "Input data information" << "\n";
     std::cerr << "# of mutations : " << pmsig.getMutationNum() << "\n";
@@ -113,7 +121,7 @@ int main(int argc, char** argv) {
 
      
     pmsig.printMean_Phi(out_dir);
-    pmsig.printMean_Psi(out_dir);
+    // pmsig.printMean_Psi(out_dir);
     pmsig.printMean_Theta(out_dir);
     pmsig.printPenalizedMeanBayesianDeviance(out_dir);
     

@@ -11,4 +11,13 @@ struct MutInfo {
 	virtual ~MutInfo() {}
 };
 
+struct MutInfo_simple {
+    int sampleID;
+    int patternVec;
+    public:
+    MutInfo_simple(int sID, int pVec) : sampleID(sID), patternVec(pVec) {};
+    virtual ~MutInfo_simple() {}
+};
+
+
 #endif

@@ -4,7 +4,7 @@
 #include <sstream>
 #include <cstdlib>
 #include <vector>
-#include<map>
+#include <map>
 #include "mutinfo.h"
 #include "random.h"
 
@@ -20,6 +20,7 @@ class PMSig {
         int K_; // # of cluster
 
         std::vector<MutInfo> mutInfo_;    // information of depth and variant read for each mutation
+        std::vector<MutInfo_simple> mutInfo_simple_;
         std::map<std::string, int> sampleName2Index;
 
         std::size_t repNum_; // # of repeats after burn-in
@@ -36,7 +37,6 @@ class PMSig {
         PMSig(const std::string& file);
         virtual void preparation(const int K, const long unsigned int repNum) = 0;
         virtual void gibbsUpdate() = 0;
-        virtual double getLogLikelihood() = 0; 
         virtual void updateBayesianDeviance(const int num) = 0;
         virtual void incrementParam() = 0;
         void printBayesianDeviance();
@@ -74,7 +74,6 @@ class PMSig_independent : public PMSig {
         void printMean_Phi(const std::string& out_dir);
         void printMean_Psi(const std::string& out_dir);
         void printMean_Theta(const std::string& out_dir);
-
         void preparation(const int K, const long unsigned int repNum);
         void gibbsUpdate();
         double getLogLikelihood();
@@ -82,6 +81,40 @@ class PMSig_independent : public PMSig {
         void incrementParam();
 
 };
+
+
+class PMSig_full : public PMSig {
+
+    private:
+        int patternNum_;
+
+        int** mutCount_assign_pattern_;
+        int* mutCount_assign_;
+        int** mutCount_assign_sample_;
+
+        double** mean_Phi_;
+        double** mean_Theta_;
+
+        double param_alpha_;  /// hyper parameter
+        double param_gamma_;
+
+    public:
+        PMSig_full(const std::string& file);
+        void preparation(const int K, const long unsigned int repNum);
+        void gibbsUpdate();
+        void incrementParam();
+        void updateBayesianDeviance(const int num);
+        void printMean_Phi(const std::string& out_dir);
+        void printMean_Theta(const std::string& out_dir);
+ 
+};
+
+
+union PMSig_union {
+    PMSig_independent independent;
+    PMSig_full full;
+};
+
 
 inline int base2num (char base) {
 
@@ -114,6 +147,101 @@ inline int compBase2num (char base) {
         return(-1);
     }
 }
+
+
+inline int mut2patternID (std::string sequence, char altBase, int L_) {
+
+    int patternID = 0;
+
+    int mbase = 1;
+
+    if (sequence.at((L_ - 1) / 2) == 'C' or sequence.at((L_ - 1) / 2) == 'T') {
+
+        for (int l = 0; l < L_; l++) {
+
+            if (l == (L_ - 1) / 2) {
+                continue;
+            }
+
+            if (sequence.at(l) == 'A') {
+                //
+            } else if (sequence.at(l) == 'C') {
+                patternID = patternID + 1 * mbase;
+            } else if (sequence.at(l) == 'G') {
+                patternID = patternID + 2 * mbase;
+            } else if (sequence.at(l) == 'T') {
+                patternID = patternID + 3 * mbase;
+            } else {
+                std::cerr << "wrong input for the mut2patternID function\n";
+                return(-1);
+            }
+            mbase = mbase * 4;
+        }
+
+        if (sequence.at((L_ - 1) / 2) == 'C' and altBase == 'A') {
+            //
+        } else if (sequence.at((L_ - 1) / 2) == 'C' and altBase == 'G') {
+            patternID = patternID + 1 * mbase;
+        } else if (sequence.at((L_ - 1) / 2) == 'C' and altBase == 'T') {
+            patternID = patternID + 2 * mbase;
+        } else if (sequence.at((L_ - 1) / 2) == 'T' and altBase == 'A') {
+            patternID = patternID + 3 * mbase;
+        } else if (sequence.at((L_ - 1) / 2) == 'T' and altBase == 'C') {
+            patternID = patternID + 4 * mbase;
+        } else if (sequence.at((L_ - 1) / 2) == 'T' and altBase == 'G') {
+            patternID = patternID + 5 * mbase;
+        } else {
+            std::cerr << "wrong input for the mut2patternID function\n";
+            return(-1);
+        }
+
+    } else {
+
+        for (int l = L_ - 1; l >=  0; l--) {
+        
+            if (l == (L_ - 1) / 2) {
+                continue;
+            }
+        
+            if (sequence.at(l) == 'T') {
+                //
+            } else if (sequence.at(l) == 'G') {
+                patternID = patternID + 1 * mbase;
+            } else if (sequence.at(l) == 'C') {
+                patternID = patternID + 2 * mbase;
+            } else if (sequence.at(l) == 'A') {
+                patternID = patternID + 3 * mbase;
+            } else {
+                std::cerr << "wrong input for the mut2patternID function\n";
+                return(-1);
+            }
+            mbase = mbase * 4;
+        }
+
+        if (sequence.at((L_ - 1) / 2) == 'G' and altBase == 'T') {
+            //
+        }    
+        else if (sequence.at((L_ - 1) / 2) == 'G' and altBase == 'C') {
+            patternID = patternID + 1 * mbase;
+        } else if (sequence.at((L_ - 1) / 2) == 'G' and altBase == 'A') {
+            patternID = patternID + 2 * mbase;
+        } else if (sequence.at((L_ - 1) / 2) == 'A' and altBase == 'T') {
+            patternID = patternID + 3 * mbase;
+        } else if (sequence.at((L_ - 1) / 2) == 'A' and altBase == 'G') {
+            patternID = patternID + 4 * mbase;
+        } else if (sequence.at((L_ - 1) / 2) == 'A' and altBase == 'C') {
+            patternID = patternID + 5 * mbase;
+        } else {
+            std::cerr << "wrong input for the mut2patternID function\n";
+            return(-1);
+        }
+
+    }
+
+
+    return(patternID);
+}
+
 
 #endif
 
