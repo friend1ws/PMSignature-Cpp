@@ -22,17 +22,21 @@ int main(int argc, char** argv) {
     std::string mut_file = argv[1];
     std::string out_dir = argv[2];
 
-    int cluster_num = atoi(argv[3]);
-    int maxRepeatNum = 100000;
+    int cluster_num = 5;
+    long unsigned int MCMCNum = 10000;
+    long unsigned int burnInNum = 1000;
 
     int c = 0;
-    while ((c = getopt(argc, argv, "k:r:")) != -1) {
+    while ((c = getopt (argc, argv, "k:m:n:")) != -1) {
         switch (c) {
             case 'k':
                 cluster_num = atoi(optarg);
                 break;
-            case 'r': 
-                maxRepeatNum = atoi(optarg);
+            case 'm': 
+                burnInNum = atoi(optarg);
+                break;
+            case 'n':
+                MCMCNum = atoi(optarg); 
                 break;
            case '?':
              if (optopt == 'k')
@@ -62,7 +66,9 @@ int main(int argc, char** argv) {
     lofs << "Reading input data from: " << mut_file << "\n";
     lofs.flush();
 
-    PMSig pmsig(mut_file);
+
+    // PMSig_independent pmsig(mut_file);
+    PMSig_full pmsig(mut_file);
     
 
     std::cerr << "Input data information" << "\n";
@@ -81,53 +87,44 @@ int main(int argc, char** argv) {
     lofs << "# of mutation signatures : " <<  cluster_num << "\n\n";
     std::cerr << "Learning parameters" << "\n";
     lofs << "Learning parameters" << "\n";
-    std::cerr << "# of max repeat cycles : " << maxRepeatNum << "\n";
-    lofs << "# of max repeat cycles : " << maxRepeatNum << "\n\n";
+    std::cerr << "# of burn-in cycles : " << burnInNum << "\n";
+    lofs << "# of burn-in cycles : " << burnInNum << "\n";
+    std::cerr << "# of MCMC cycles : " << MCMCNum << "\n\n";
+    lofs << "# of MCMC cycles : " << MCMCNum << "\n\n";
     lofs.flush();
 
-    pmsig.preparation(cluster_num);
+    pmsig.preparation(cluster_num, static_cast<std::size_t>(MCMCNum));
 
-    // pmsig.printF(out_dir);
-    // pmsig.printQ(out_dir);
-
-    // double diffParam = 0;
-    double prevL = 0;
-    double currL = 0;
-    int cycle = 0;
     // ********************
-    for (cycle = 0; cycle < maxRepeatNum; cycle++) {
-        pmsig.EstepUpdate();
-        pmsig.MstepUpdate();
-       
-        // diffParam = pmsig.getDiffF() + pmsig.getDiffQ();
-        currL = pmsig.getLikelihood();
-        if (cycle > 0) {
-            std::cout << cycle << "\t" << currL << "\t" << currL - prevL << "\t" << pmsig.getDiffF() << "\t" << pmsig.getDiffQ() << "\n";
-            if (currL - prevL < 1e-3) {
-                break;
-            }
+    // burn-in step
+    for (long unsigned int i = 0; i < burnInNum; i++) {
+        pmsig.gibbsUpdate();
+        if ((i % 1000 == 0) & (i > 0)) {
+            std::cerr << i << " times finished." << "\n";
+            lofs << i << " times finished." << "\n";
+            lofs.flush();
         }
-        prevL = pmsig.getLikelihood();
-        // std::cout << "printTheta" << "\n";
-        // pmsig.printTheta(out_dir);
-        // std::cout << "printF" << "\n";
-        // pmsig.printF(out_dir);
-        // std::cout << "printQ" << "\n";
-        // pmsig.printQ(out_dir);
     }
     // *********************
+    std::cerr << "The burn-in cycles are finished.\n";
 
-    pmsig.printF(out_dir);
-    pmsig.printQ(out_dir);   
+    for (long unsigned int i = 0; i < MCMCNum; i++) {
+        pmsig.gibbsUpdate();
+        pmsig.incrementParam();
+        pmsig.updateBayesianDeviance(i);
+        if (i % 1000 == 0) {
+            std::cout << i << " times finished." << "\n";
+            lofs << i << " times finished." << "\n";
+            lofs.flush();
+        }
+    }
 
-    std::cerr << "Learning Result" << "\n";
-    lofs << "Learning Result" << "\n";
-    std::cerr << "likelihood : " << currL << "\n";
-    lofs << "likelihood : " << currL << "\n";
-    std::cerr << "# of cycles for estimation : " << cycle << "\n";
-    lofs << "# of cycles for estimation : " << cycle << "\n";
-    lofs.flush();
- 
+     
+    pmsig.printMean_Phi(out_dir);
+    // pmsig.printMean_Psi(out_dir);
+    pmsig.printMean_Theta(out_dir);
+    pmsig.printPenalizedMeanBayesianDeviance(out_dir);
+    
     lofs.close();
     return(0);
 
