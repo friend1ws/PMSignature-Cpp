@@ -11,7 +11,7 @@ while(<IN>) {
 
     my @F = split("\t", $_);
 
-    print $F[1] . "\t" . ($F[2] - $size - 1) . "\t" . ($F[2] + $size) . "\t" . $F[0] . ";" . $F[3] . ";" . $F[4] . "\n";
+    print $F[1] . "\t" . ($F[2] - $size - 1) . "\t" . ($F[3] + $size) . "\t" . join(";", @F) . "\n";
 
 }
 close(IN);
