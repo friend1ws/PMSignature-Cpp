@@ -5,9 +5,14 @@
 #include <cstdlib>
 #include <ctime>
 #include <unistd.h>
+#include <iomanip>
 #include "pmsig.h"
 
 int main(int argc, char** argv) {
+
+    std::clock_t start;
+    double duration;
+    start = std::clock();
 
     if (argc < 3) {
         std::cerr << "Usage: " << argv[0] << " method mutation_infomation_file output_directory" << std::endl;
@@ -23,7 +28,7 @@ int main(int argc, char** argv) {
     std::string out_dir = argv[2];
 
     int cluster_num = atoi(argv[3]);
-    int maxRepeatNum = 100000;
+    int maxRepeatNum = 1000000;
 
     int c = 0;
     while ((c = getopt(argc, argv, "k:r:")) != -1) {
@@ -102,8 +107,8 @@ int main(int argc, char** argv) {
         // diffParam = pmsig.getDiffF() + pmsig.getDiffQ();
         currL = pmsig.getLikelihood();
         if (cycle > 0) {
-            std::cout << cycle << "\t" << currL << "\t" << currL - prevL << "\t" << pmsig.getDiffF() << "\t" << pmsig.getDiffQ() << "\n";
-            if (currL - prevL < 1e-3) {
+            // std::cout << cycle << "\t" << currL << "\t" << currL - prevL << "\t" << pmsig.getDiffF() << "\t" << pmsig.getDiffQ() << "\n";
+            if (currL - prevL < 1e-4) {
                 break;
             }
         }
@@ -120,12 +125,17 @@ int main(int argc, char** argv) {
     pmsig.printF(out_dir);
     pmsig.printQ(out_dir);   
 
+    duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+
     std::cerr << "Learning Result" << "\n";
     lofs << "Learning Result" << "\n";
-    std::cerr << "likelihood : " << currL << "\n";
-    lofs << "likelihood : " << currL << "\n";
+    std::cerr << std::fixed << std::setprecision(4) << "log-likelihood : " << currL << "\n";
+    lofs << std::fixed << std::setprecision(4) << "log-likelihood : " << currL << "\n";
     std::cerr << "# of cycles for estimation : " << cycle << "\n";
     lofs << "# of cycles for estimation : " << cycle << "\n";
+    std::cerr << "execution time : " << duration << "\n";
+    lofs << "execution time : " << duration << "\n";
+
     lofs.flush();
  
     lofs.close();
