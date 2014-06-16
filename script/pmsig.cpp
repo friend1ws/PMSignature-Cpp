@@ -88,7 +88,64 @@ PMSig::PMSig(const std::string& file) {
     // the number of mutations
     N_ = curNum;
 
+    delete [] mutationFeature;
 }
+
+
+PMSig::~PMSig() {
+
+    delete [] mutFeatureDim_;
+
+    for (int s = 0; s < S_; ++s) {
+        delete [] mutData_[s];
+    }
+    delete [] mutData_;
+
+
+    for (int s = 0; s < S_; ++s) {
+        for (int k = 0; k < K_; ++k) {
+            delete [] Theta_[s][k];
+        }
+        delete [] Theta_[s];
+    }
+    delete [] Theta_;
+
+
+    for (int k = 0; k < K_; ++k) {
+        for (int l = 0; l < L_; ++l) {
+            delete [] F_[k][l];
+        }
+        delete [] F_[k];
+    }
+    delete [] F_;
+
+    for (int k = 0; k < K_; ++k) {
+        for (int l = 0; l < L_; ++l) {
+            delete [] newF_[k][l];
+        }
+        delete [] newF_[k];
+    }
+    delete [] newF_;
+
+
+    for (int s = 0; s < S_; ++s) {
+        delete [] Q_[s];
+    }
+    delete [] Q_;
+
+    for (int s = 0; s < S_; ++s) {
+        delete [] newQ_[s];
+    }   
+    delete [] newQ_;
+
+    delete [] currentDigits_;
+
+
+}
+
+
+
+
 
 
 void PMSig::preparation(const int K) {
@@ -116,6 +173,8 @@ void PMSig::preparation(const int K) {
             for (int l = 0; l < L_; ++l) {
                 F_[k][l] = new double[mutFeatureDim_[l]];
                 for (int m = 0; m < mutFeatureDim_[l]; m++) {
+                // F_[k][l] = new double[6];
+                // for (int m = 0; m < 6; m ++) {
                     F_[k][l][m] = 0;
                 }
             }
@@ -135,6 +194,8 @@ void PMSig::preparation(const int K) {
             for (int l = 0; l < L_; ++l) {
                 newF_[k][l] = new double[mutFeatureDim_[l]];
                 for (int m = 0; m < mutFeatureDim_[l]; m++) {
+                // newF_[k][l] = new double [6];
+                // for (int m = 0; m < 6; m++) {
                     newF_[k][l][m] = 0;
                 }
             }
@@ -148,8 +209,15 @@ void PMSig::preparation(const int K) {
             }
         }
 
+        currentDigits_ = new int[L_];
+        for (int l = 0; l < L_; l++) {
+            currentDigits_[l] = 0;
+        }
+
     
     }
+
+
 
     catch (...) {
         std::cerr << "init(): Out of memmory" << std::endl;
@@ -207,10 +275,8 @@ void PMSig::EstepUpdate() {
     }
 
 
-    int* currentDigits;
-    currentDigits = new int[L_];
     for (int l = 0; l < L_; l++) {
-        currentDigits[l] = 0;
+        currentDigits_[l] = 0;
     }
 
     for (int k = 0; k < K_; k++) {
@@ -218,16 +284,16 @@ void PMSig::EstepUpdate() {
         
             for (int l = 0; l < L_; l++) {
                 for (int s = 0; s < S_; s++) {
-                    Theta_[s][k][p] = Theta_[s][k][p] * F_[k][l][currentDigits[l]];
+                    Theta_[s][k][p] = Theta_[s][k][p] * F_[k][l][currentDigits_[l]];
                 }
             }
 
             int tl = 0;
-            while(currentDigits[tl] + 1 >= mutFeatureDim_[tl]) {
-                currentDigits[tl] = 0;
+            while(currentDigits_[tl] + 1 >= mutFeatureDim_[tl]) {
+                currentDigits_[tl] = 0;
                 tl = tl + 1;
             }
-            currentDigits[tl] = currentDigits[tl] + 1;
+            currentDigits_[tl] = currentDigits_[tl] + 1;
        
             // for debug
             // std::cerr <<  currentDigits[0];
@@ -272,13 +338,10 @@ void PMSig::EstepUpdate() {
 void PMSig::MstepUpdate() {
 
 
-    int* currentDigits;
-    currentDigits = new int[L_];
-
     for (int k = 0; k < K_; k++) {
 
         for (int l = 0; l < L_; l++) {
-            currentDigits[l] = 0;
+            currentDigits_[l] = 0;
         }
 
         for (int p = 0; p < P_; p++) {
@@ -287,17 +350,17 @@ void PMSig::MstepUpdate() {
 
                 newQ_[s][k] = newQ_[s][k] + mutData_[s][p] * Theta_[s][k][p];
                 for (int l = 0; l < L_; l++) {
-                    newF_[k][l][currentDigits[l]] = newF_[k][l][currentDigits[l]] + mutData_[s][p] * Theta_[s][k][p];
+                    newF_[k][l][currentDigits_[l]] = newF_[k][l][currentDigits_[l]] + mutData_[s][p] * Theta_[s][k][p];
                 }
 
             }
 
             int tl = 0;
-            while(currentDigits[tl] + 1 >= mutFeatureDim_[tl]) {
-                currentDigits[tl] = 0;
+            while(currentDigits_[tl] + 1 >= mutFeatureDim_[tl]) {
+                currentDigits_[tl] = 0;
                 tl = tl + 1;
             }
-            currentDigits[tl] = currentDigits[tl] + 1;
+            currentDigits_[tl] = currentDigits_[tl] + 1;
 
             // for debug
             // std::cout <<  currentDigits[0];

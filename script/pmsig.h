@@ -29,7 +29,8 @@ class PMSig {
         double** Q_;
         double*** newF_;
         double** newQ_;
- 
+
+        int* currentDigits_; 
         double diffF_;
         double diffQ_;
 
@@ -37,6 +38,7 @@ class PMSig {
 
     public:
         PMSig(const std::string& file);
+        ~PMSig();
         void preparation(const int K);
         void EstepUpdate();
         void MstepUpdate();
