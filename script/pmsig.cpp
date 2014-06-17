@@ -289,18 +289,14 @@ void PMSig::EstepUpdate() {
             }
 
             int tl = 0;
-            while(currentDigits_[tl] + 1 >= mutFeatureDim_[tl]) {
+            while(tl < L_ and currentDigits_[tl] + 1 >= mutFeatureDim_[tl]) {
                 currentDigits_[tl] = 0;
                 tl = tl + 1;
             }
-            currentDigits_[tl] = currentDigits_[tl] + 1;
-       
-            // for debug
-            // std::cerr <<  currentDigits[0];
-            // for (int l = 1; l < L_; l++) {
-            //     std::cerr << "\t" << currentDigits[l]; 
-            // }
-            // std::cerr << "\n";
+
+            if (tl < L_) {
+                currentDigits_[tl] = currentDigits_[tl] + 1;
+            }
 
         }     
     }
@@ -356,36 +352,17 @@ void PMSig::MstepUpdate() {
             }
 
             int tl = 0;
-            while(currentDigits_[tl] + 1 >= mutFeatureDim_[tl]) {
+            while(tl < L_ and currentDigits_[tl] + 1 >= mutFeatureDim_[tl]) {
                 currentDigits_[tl] = 0;
                 tl = tl + 1;
             }
-            currentDigits_[tl] = currentDigits_[tl] + 1;
-
-            // for debug
-            // std::cout <<  currentDigits[0];
-            // for (int l = 1; l < L_; l++) {
-            //     std::cout << "\t" << currentDigits[l]; 
-            // }
-            // std::cout << "\n";
+            if (tl < L_) {
+                currentDigits_[tl] = currentDigits_[tl] + 1;
+            }
 
         }
 
     }
-
-    // std::cout << "print newF" << "\n";
-    // for (int k = 0; k < K_; k++) {
-    //     // ofs << Q_[s][0];
-    //     for (int l = 0; l < L_; l++) {
-    //         std::cout << newF_[k][l][0];
-    //         for (int m = 1; m < mutFeatureDim_[l]; m++) {
-    //             // ofs << "\t" << F_[k][l][m];
-    //             std::cout << "\t" << newF_[k][l][m];
-    //         }
-    //         // ofs << "\n";
-    //         std::cout << "\n";
-    //     }
-    // }
 
 
     double tempSum;

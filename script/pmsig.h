@@ -38,7 +38,7 @@ class PMSig {
 
     public:
         PMSig(const std::string& file);
-        ~PMSig();
+        virtual ~PMSig();
         void preparation(const int K);
         void EstepUpdate();
         void MstepUpdate();
